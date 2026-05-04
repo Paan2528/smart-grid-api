@@ -24,6 +24,9 @@ def init_db():
     conn.commit()
     conn.close()
 
+
+init_db()
+
 # --------------------------------------------
 # call the init_db when the server starts
 # ----------Pydantic model for sensor data----------------
@@ -57,7 +60,7 @@ def ingest_data(data: SensorData):
     return {
         "message": "Data saved successfully",
         "data": {
-            "votage": data.voltage,
+            "voltage": data.voltage,
             "current": data.current,
             "power": data.power,
             "timestamp": timestamp
@@ -70,7 +73,7 @@ def get_readings(limit: int = 10):
     conn = sqlite3.connect("grid.db")
     # fetch the latest readings from the database
     rows = conn.execute(
-        "SELECT voltage, current, power, timestamp FROM readings ORDER BY id DESC LIMIT ?",
+        "SELECT id, voltage, current, power, timestamp FROM readings ORDER BY id DESC LIMIT ?",
         (limit,)
     ).fetchall()
     conn.close()
