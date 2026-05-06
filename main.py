@@ -2,7 +2,7 @@ from fastapi import FastAPI
 from pydantic import BaseModel
 from datetime import datetime
 import sqlite3
-import detector import detect_anomaly
+from detector import detect_anomaly
 
 app = FastAPI()
 
@@ -70,6 +70,25 @@ def ingest_data(data: SensorData):
         },
         "anomaly": result
     }
+
+
+@app.get("/anomalies")
+def get_anomalies():
+    # test directly the anomaly detection with some test data
+    test_case = [
+
+        {"voltage": 230, "current": 10, "power": 2300},  # normal
+        {"voltage": 290, "current": 10, "power": 2900},   # over voltage anomaly
+        {"voltage": 160, "current": 10, "power": 1600},  # under voltage anomaly
+    ]
+
+    results = []
+    for case in test_case:
+        detection = detect_anomaly(
+            case["voltage"], case["current"], case["power"])
+        results.append({**case, **detection})
+
+    return {"results": results}
 
 
 @app.get("/readings")
