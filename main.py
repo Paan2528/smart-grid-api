@@ -2,6 +2,7 @@ from fastapi import FastAPI
 from pydantic import BaseModel
 from datetime import datetime
 import sqlite3
+import detector import detect_anomaly
 
 app = FastAPI()
 
@@ -49,14 +50,16 @@ def get_status():
 @app.post("/ingest")
 def ingest_data(data: SensorData):
     timestamp = datetime.now().isoformat()
+    # check for anomaly
+    result = detect_anomaly(data.voltage, data.current, data.power)
+
     # store the data in the database
-    conn = sqlite3.connect("grid.db")
-    conn.execute(
-        "INSERT INTO readings (voltage, current, power,timestamp) VALUES (?, ?, ?, ?)",
-        (data.voltage, data.current, data.power, datetime.now().isoformat())
-    )
-    conn.commit()
-    conn.close()
+    with sqlite3.connect("grid.db") as conn:
+        conn.execute(
+            "INSERT INTO readings (voltage, current, power,timestamp) VALUES (?, ?, ?, ?)",
+            (data.voltage, data.current, data.power, timestamp)
+        )
+
     return {
         "message": "Data saved successfully",
         "data": {
@@ -64,7 +67,8 @@ def ingest_data(data: SensorData):
             "current": data.current,
             "power": data.power,
             "timestamp": timestamp
-        }
+        },
+        "anomaly": result
     }
 
 
