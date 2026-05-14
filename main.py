@@ -3,6 +3,7 @@ from pydantic import BaseModel
 from datetime import datetime
 import sqlite3
 from detector import detect_anomaly
+from explainer import explain_anomaly
 
 app = FastAPI()
 
@@ -114,3 +115,30 @@ def get_readings(limit: int = 10):
     ]
 
     return {"total": len(result), "readings": result}
+
+
+@app.post("/explain")
+def explain_reading(data: SensorData):
+    result = detect_anomaly(data.voltage, data.current, data.power)
+
+    explanation = ""
+    if result["is_anomaly"]:
+        explanation = explain_anomaly(
+            data.voltage,
+            data.current,
+            data.power,
+            result["severity"]
+
+        )
+    else:
+        explanation = "Reading is normal. No action required."
+
+    return {
+        "data": {
+            "voltage": data.voltage,
+            "current": data.current,
+            "power": data.power
+        },
+        "anomaly": result,
+        "explanation": explanation
+    }
