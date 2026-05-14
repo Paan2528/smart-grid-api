@@ -68,7 +68,7 @@ def ingest_data(data: SensorData):
             "power": data.power,
             "timestamp": timestamp
         },
-        "anomaly": result
+        "anomaly": result.items() if hasattr(result, "items") else result
     }
 
 

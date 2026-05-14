@@ -1,6 +1,6 @@
+
 import numpy as np
 from sklearn.ensemble import IsolationForest
-
 # -----------------------------------------------------------
 # ------Train Model
 # -----------------------------------------------------------
@@ -18,8 +18,8 @@ def train_model():
     # Train Isolation Forest model
 
     model = IsolationForest(
-        contamination=0.2,  # maybe 20% anomalies
-        random_state=42.
+        contamination="auto",  # maybe 20% anomalies
+        random_state=42
     )
     model.fit(normal_data)
     return model
@@ -44,7 +44,7 @@ def detect_anomaly(voltage: float, current: float, power: float) -> dict:
     prediction = model.predict(data)[0]
     score = model.score_samples(data)[0]  # anomaly score
 
-    is_anomaly = prediction == -1
+    is_anomaly = bool(prediction == -1)
     return {
         "is_anomaly": is_anomaly,
         "score": round(float(score), 4),
